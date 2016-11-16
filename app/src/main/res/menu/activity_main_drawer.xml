@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/menu_job_list"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="Job List" />
+        <item
+            android:id="@+id/menu_active_job"
+            android:icon="@drawable/ic_menu_gallery"
+            android:title="Active Job" />
+        <item
+            android:id="@+id/menu_settings"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Settings" />
+    </group>
+
+    <item android:title="Action">
+        <menu>
+            <item
+                android:id="@+id/menu_logout"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Logout" />
+        </menu>
+    </item>
+
+</menu>
