@@ -12,5 +12,13 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="edu.gwinnetttech.gtcnsabuddy.ActivityMain"
     tools:showIn="@layout/app_bar_activity_main">
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="2dp"
+        android:id="@+id/job_list_view"
+        android:clickable="true"
+        android:dividerHeight="2dp"
+        />
 
 </RelativeLayout>

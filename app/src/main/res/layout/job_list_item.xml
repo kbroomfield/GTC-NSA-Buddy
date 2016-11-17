@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/customer_image"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentStart="true"
+        android:src="@mipmap/ic_launcher"
+        android:layout_marginRight="4dp"/>
+
+    <TextView
+        android:id="@+id/job_ID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/customer_image"
+        android:text="@string/job_id"
+        android:padding="5dp"
+        />
+
+    <TextView
+        android:id="@+id/job_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/job_desc"
+        android:layout_toRightOf="@id/job_ID"
+        android:layout_marginLeft="100dp"
+        android:padding="5dp"/>
+
+    <TextView
+        android:id="@+id/job_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/job_address"
+        android:layout_toRightOf="@id/customer_image"
+        android:layout_below="@id/job_ID"
+        android:paddingBottom="5dp"/>
+
+</RelativeLayout>

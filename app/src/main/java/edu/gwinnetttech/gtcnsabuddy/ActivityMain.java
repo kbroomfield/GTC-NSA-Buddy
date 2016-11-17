@@ -1,9 +1,10 @@
 package edu.gwinnetttech.gtcnsabuddy;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
+import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -12,9 +13,35 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.NetworkImageView;
+import com.android.volley.toolbox.StringRequest;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+import edu.gwinnetttech.gtcnsabuddy.model.Employee;
+import edu.gwinnetttech.gtcnsabuddy.model.JobDetails;
+import edu.gwinnetttech.gtcnsabuddy.model.EmployeeResponse;
+import edu.gwinnetttech.gtcnsabuddy.service.RemoteDataService;
 
 public class ActivityMain extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private int employeeId;
+    private int loginId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,15 +49,6 @@ public class ActivityMain extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -40,6 +58,13 @@ public class ActivityMain extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        setupListView();
+        setupNavigationHeader();
+
+        employeeId = getSharedPreferences(ActivityLogin.NSA_PREFERENCES, Context.MODE_PRIVATE).getInt(ActivityLogin.EMPLOYEE_ID, -1);
+        loginId = getSharedPreferences(ActivityLogin.NSA_PREFERENCES, Context.MODE_PRIVATE).getInt(ActivityLogin.LOGIN_ID, -1);
+
     }
 
     @Override
@@ -98,7 +123,145 @@ public class ActivityMain extends AppCompatActivity
         return true;
     }
 
+    /**
+     * Builds an request that needs an Employee object.
+     * @param url
+     * @param responseHandler
+     * @return
+     */
+    private StringRequest buildEmployeeRequest(String url, Response.Listener<String> responseHandler){
+        // Using a StringRequest to allow Gson usage. In retrospect this turned out to be harder than just doing a JSONObject request and calling toString() on it..
+        return new StringRequest(
+                Request.Method.POST,
+                url,
+                responseHandler,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("ActivityMain", error.getMessage());
+                    }
+                }
+        ){
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                Gson gson = new GsonBuilder().create();
+                String requestObject = gson.toJson(new Employee(employeeId, "", "", "", "", ""));
+                Log.i("ActivityLogin", requestObject);
+                return requestObject.getBytes();
+            }
+
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+        };
+    }
+
+    private void setupListView(){
+        // Setup the listview. Using mocked JobDetails for testing.
+        ArrayList<JobDetails> jobDetails = new ArrayList<>();
+
+        for ( int i = 1; i < 20; i++ ){
+            JobDetails job = new JobDetails();
+            job.setJobID(i);
+            job.setService("Painting");
+            job.setAddress("75 Maddox Road, Buford, GA 30518");
+            jobDetails.add(job);
+        }
+
+        ListView listView = (ListView)findViewById(R.id.job_list_view);
+        JobListAdapter jobListAdapter = new JobListAdapter(this, jobDetails);
+
+        listView.setAdapter(jobListAdapter);
+    }
+
     private void employeeLogout() {
-        // TODO: Call EmployeeLogOut web method, redirect to ActivityLogin
+        try{
+            JSONObject requestObject = new JSONObject();
+            requestObject.put("EmployeeID", employeeId);
+            requestObject.put("Latitude", 0);
+            requestObject.put("Longitude", 0);
+            requestObject.put("TimeIn", "/Date(12345)/");
+            requestObject.put("TimeOut", "/Date(" + System.currentTimeMillis() + ")/");
+            requestObject.put("LoginID", loginId);
+
+            Log.i("ActivityMain", requestObject.toString());
+
+            // Prepare the request.
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, "http://www.jumpcreek.com/NSABuddy/Service1.svc/EmployeeLogOut", requestObject,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            Log.i("ActivityMain", "Successfully logged out.");
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    // TODO: More detailed error handling.
+                    Log.e("ActivityMain", "HTTP logout failure: " + error.getMessage());
+                }
+            });
+
+            RemoteDataService.getInstance(this).getRequestQueue().add(request);
+        }
+        catch (JSONException je) {
+            Log.e("ActivityMain", "An error occured while logging out: " + je.getMessage());
+        }
+
+        SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences(ActivityLogin.NSA_PREFERENCES ,MODE_PRIVATE).edit();
+        sharedPreferencesEditor.remove(ActivityLogin.LOGIN_ID);
+        sharedPreferencesEditor.remove(ActivityLogin.EMPLOYEE_ID);
+        sharedPreferencesEditor.apply();
+
+        // TODO: Prevent back navigation to this activity.
+        Intent startLoginActivity = new Intent(this, ActivityLogin.class);
+        startActivity(startLoginActivity);
+
+    }
+
+    private void setupNavigationHeader() {
+        StringRequest employeeRequest = buildEmployeeRequest("http://www.jumpcreek.com/NSABuddy/Service1.svc/GetEmployeeByID", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Gson gson = new GsonBuilder().create();
+                EmployeeResponse employeeResponse = gson.fromJson(response, EmployeeResponse.class);
+                Employee employee = employeeResponse.EmployeeResponse.get(0);
+
+                TextView navEmail = (TextView)findViewById(R.id.nav_employee_email);
+                TextView navName = (TextView)findViewById(R.id.nav_employee_name);
+
+                if ( employee.getFirstName() != null && employee.getLastName() != null ){
+                    navName.setText(employee.getFirstName() + " " + employee.getLastName());
+                }
+
+                if ( employee.getEmail() != null ) {
+                    navEmail.setText(employee.getEmail());
+                }
+            }
+        });
+
+        // TODO: Fix employee image request. NetworkImageView is a null ref.
+        final NetworkImageView networkImageView = (NetworkImageView)findViewById(R.id.nav_image_view);
+        final RemoteDataService remoteDataServiceInstance = RemoteDataService.getInstance(this);
+
+        StringRequest employeeImageRequest = buildEmployeeRequest("http://www.jumpcreek.com/nsabuddy/Service1.svc/GetEmployeeImage", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try{
+                    JSONArray jsonResponse = new JSONObject(response).getJSONArray("Data");
+                    String imageUrl = jsonResponse.getJSONObject(0).getString("ImageAddress");
+
+                    networkImageView.setImageUrl(imageUrl, remoteDataServiceInstance.getImageLoader());
+
+                }
+                catch ( JSONException je ) {
+                    Log.e("ActivityMain", "Error parsing JSON for employee image request: " + je.getMessage());
+                }
+
+            }
+        });
+
+        remoteDataServiceInstance.getRequestQueue().add(employeeRequest);
+//        remoteDataServiceInstance.getRequestQueue().add(employeeImageRequest);
     }
 }
