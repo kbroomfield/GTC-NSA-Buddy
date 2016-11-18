@@ -29,6 +29,7 @@ import edu.gwinnetttech.gtcnsabuddy.service.RemoteDataService;
 
 public class ActivityJobDetails extends AppCompatActivity {
 
+    // TODO: Tie this variable to the actual job status.
     private boolean isActiveJob = false;
 
     @Override
@@ -62,7 +63,6 @@ public class ActivityJobDetails extends AppCompatActivity {
         requestQueue.add(makeJobRequest("http://www.jumpcreek.com/nsabuddy/service1.svc/getjobimages", selectedJob, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-//                Log.i("ActivityJobDetails", response);
                 try{
                     String imageUrl = new JSONObject(response).getJSONArray("Data").getJSONObject(0).getString("JobImageAddress");
                     NetworkImageView networkImageView = (NetworkImageView)findViewById(R.id.header_image);
@@ -76,6 +76,7 @@ public class ActivityJobDetails extends AppCompatActivity {
         }));
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -84,9 +85,11 @@ public class ActivityJobDetails extends AppCompatActivity {
                 isActiveJob = !isActiveJob;
 
                 if (isActiveJob) {
+                    // TODO: Call the StartJob web method. Can use makeJobRequest.
                     fab.setImageDrawable(getDrawable(R.drawable.ic_job_done_w));
                     snackbarText = "Job marked as active.";
                 } else {
+                    // TODO: Call the CompleteJob web method. Can use makeJobRequest. May need to set the time.
                     fab.setImageDrawable(getDrawable(R.drawable.ic_active_job_w));
                     snackbarText = "Job marked done.";
                 }

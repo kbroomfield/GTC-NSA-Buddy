@@ -277,10 +277,6 @@ public class ActivityMain extends AppCompatActivity
             }
         });
 
-        // TODO: Fix employee image request. NetworkImageView is a null ref.
-//        final NetworkImageView networkImageView = (NetworkImageView)findViewById(R.id.nav_image_view);
-//        final RemoteDataService remoteDataServiceInstance = RemoteDataService.getInstance(this);
-
         StringRequest employeeImageRequest = buildEmployeeRequest("http://www.jumpcreek.com/nsabuddy/Service1.svc/GetEmployeeImage", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
