@@ -13,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -43,8 +45,11 @@ public class ActivityMain extends AppCompatActivity
     private int employeeId;
     private int loginId;
 
+    private RemoteDataService remoteDataService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        remoteDataService = RemoteDataService.getInstance(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -173,6 +178,13 @@ public class ActivityMain extends AppCompatActivity
         JobListAdapter jobListAdapter = new JobListAdapter(this, jobDetails);
 
         listView.setAdapter(jobListAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent startJobDetailsIntent = new Intent(view.getContext(), ActivityJobDetails.class);
+                startActivity(startJobDetailsIntent);
+            }
+        });
     }
 
     private void employeeLogout() {
@@ -202,7 +214,7 @@ public class ActivityMain extends AppCompatActivity
                 }
             });
 
-            RemoteDataService.getInstance(this).getRequestQueue().add(request);
+            remoteDataService.getRequestQueue().add(request);
         }
         catch (JSONException je) {
             Log.e("ActivityMain", "An error occured while logging out: " + je.getMessage());
@@ -241,8 +253,8 @@ public class ActivityMain extends AppCompatActivity
         });
 
         // TODO: Fix employee image request. NetworkImageView is a null ref.
-        final NetworkImageView networkImageView = (NetworkImageView)findViewById(R.id.nav_image_view);
-        final RemoteDataService remoteDataServiceInstance = RemoteDataService.getInstance(this);
+//        final NetworkImageView networkImageView = (NetworkImageView)findViewById(R.id.nav_image_view);
+//        final RemoteDataService remoteDataServiceInstance = RemoteDataService.getInstance(this);
 
         StringRequest employeeImageRequest = buildEmployeeRequest("http://www.jumpcreek.com/nsabuddy/Service1.svc/GetEmployeeImage", new Response.Listener<String>() {
             @Override
@@ -251,7 +263,8 @@ public class ActivityMain extends AppCompatActivity
                     JSONArray jsonResponse = new JSONObject(response).getJSONArray("Data");
                     String imageUrl = jsonResponse.getJSONObject(0).getString("ImageAddress");
 
-                    networkImageView.setImageUrl(imageUrl, remoteDataServiceInstance.getImageLoader());
+                    NetworkImageView networkImageView = (NetworkImageView)findViewById(R.id.nav_image_view);
+                    networkImageView.setImageUrl(imageUrl, remoteDataService.getImageLoader());
 
                 }
                 catch ( JSONException je ) {
@@ -261,7 +274,7 @@ public class ActivityMain extends AppCompatActivity
             }
         });
 
-        remoteDataServiceInstance.getRequestQueue().add(employeeRequest);
-//        remoteDataServiceInstance.getRequestQueue().add(employeeImageRequest);
+        remoteDataService.getRequestQueue().add(employeeRequest);
+        remoteDataService.getRequestQueue().add(employeeImageRequest);
     }
 }

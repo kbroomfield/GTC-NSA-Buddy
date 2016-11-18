@@ -14,8 +14,8 @@
 
     <com.android.volley.toolbox.NetworkImageView
         android:id="@+id/nav_image_view"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:paddingTop="@dimen/nav_header_vertical_spacing" />
 
     <TextView
