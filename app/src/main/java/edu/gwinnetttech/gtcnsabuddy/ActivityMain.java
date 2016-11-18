@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -35,8 +36,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import edu.gwinnetttech.gtcnsabuddy.model.Employee;
+import edu.gwinnetttech.gtcnsabuddy.model.Job;
 import edu.gwinnetttech.gtcnsabuddy.model.JobDetails;
 import edu.gwinnetttech.gtcnsabuddy.model.EmployeeResponse;
+import edu.gwinnetttech.gtcnsabuddy.model.JobResponse;
 import edu.gwinnetttech.gtcnsabuddy.service.RemoteDataService;
 
 public class ActivityMain extends AppCompatActivity
@@ -46,6 +49,8 @@ public class ActivityMain extends AppCompatActivity
     private int loginId;
 
     private RemoteDataService remoteDataService;
+
+    public static final String JOB_EXTRA = "JOB_EXTRA";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,7 +169,7 @@ public class ActivityMain extends AppCompatActivity
 
     private void setupListView(){
         // Setup the listview. Using mocked JobDetails for testing.
-        ArrayList<JobDetails> jobDetails = new ArrayList<>();
+        ArrayList<Job> jobDetails = new ArrayList<>();
 
 //        for ( int i = 1; i < 20; i++ ){
 //            JobDetails job = new JobDetails();
@@ -181,8 +186,17 @@ public class ActivityMain extends AppCompatActivity
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent startJobDetailsIntent = new Intent(view.getContext(), ActivityJobDetails.class);
-                startActivity(startJobDetailsIntent);
+
+                if ( parent.getItemAtPosition(position) instanceof Job ) {
+                    Job j = (Job)parent.getItemAtPosition(position);
+                    Intent startJobDetailsIntent = new Intent(view.getContext(), ActivityJobDetails.class);
+                    startJobDetailsIntent.putExtra(JOB_EXTRA, j);
+                    startActivity(startJobDetailsIntent);
+                }
+                else {
+                    Log.e("ActivityMain", "An error occured doing job shit.");
+//                    Toast.makeText(parent.getContext(), "An unexpected error occured.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -190,22 +204,12 @@ public class ActivityMain extends AppCompatActivity
         StringRequest employeeJobRequest = buildEmployeeRequest("http://www.jumpcreek.com/NSABuddy/Service1.svc/GetJobsForEmployee", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                // Yes, we could have just done a JSON object request but why re-do the buildEmployeeRequest method? Also, this is very FRAGILE
-                try{
-                    JSONArray jsonResponse = new JSONObject(response).getJSONArray("Data");
-
-                    // No foreach for JSONArray
-                    for ( int i = 0; i < jsonResponse.length(); i++ ) {
-                        Log.i("ActivityMain", jsonResponse.getJSONObject(i).toString());
-                    }
-                }
-                catch ( JSONException je ) {
-                    Log.e("ActivityMain", "Error parsing job JSON response: " + je.getMessage());
-                }
+                Gson gson = new GsonBuilder().create();
+                jobListAdapter.addAll(gson.fromJson(response, JobResponse.class).jobList);
             }
         });
 
-//        remoteDataService.getRequestQueue().add(employeeJobRequest);
+        remoteDataService.getRequestQueue().add(employeeJobRequest);
     }
 
     private void employeeLogout() {
@@ -283,6 +287,8 @@ public class ActivityMain extends AppCompatActivity
                 try{
                     JSONArray jsonResponse = new JSONObject(response).getJSONArray("Data");
                     String imageUrl = jsonResponse.getJSONObject(0).getString("ImageAddress");
+
+                    Log.i("ActivityMain", "Employee Image URL: " + imageUrl);
 
                     NetworkImageView networkImageView = (NetworkImageView)findViewById(R.id.nav_image_view);
                     networkImageView.setImageUrl(imageUrl, remoteDataService.getImageLoader());

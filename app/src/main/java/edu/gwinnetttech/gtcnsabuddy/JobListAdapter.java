@@ -1,6 +1,5 @@
 package edu.gwinnetttech.gtcnsabuddy;
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -11,18 +10,18 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import edu.gwinnetttech.gtcnsabuddy.model.JobDetails;
+import edu.gwinnetttech.gtcnsabuddy.model.Job;
 
 /**
  * Created by Albert on 10/30/2016.
  */
 
-public class JobListAdapter extends ArrayAdapter<JobDetails> {
-    private ArrayList<JobDetails> jobDetails;
+public class JobListAdapter extends ArrayAdapter<Job> {
+    private ArrayList<Job> jobList;
 
-    public JobListAdapter(Context context, ArrayList<JobDetails> jobDetails) {
-        super(context, R.layout.job_list_item, jobDetails);
-        this.jobDetails = jobDetails;
+    public JobListAdapter(Context context, ArrayList<Job> jobList) {
+        super(context, R.layout.job_list_item, jobList);
+        this.jobList = jobList;
 
     }
 
@@ -38,19 +37,20 @@ public class JobListAdapter extends ArrayAdapter<JobDetails> {
         TextView txtJobDesc = (TextView) view.findViewById(R.id.job_desc);
         TextView txtJobAddress = (TextView) view.findViewById(R.id.job_address);
 
-        JobDetails job = jobDetails.get(position);
+        Job job = jobList.get(position);
 
         // Should have used Kotlin. Gotta love that ?
-        if ( job.getAddress() != null ) {
-            txtJobAddress.setText(job.getAddress());
-        }
-        if ( job.getService() != null ) {
-            txtJobDesc.setText(job.getService());
+        if ( job.getLatitude() != null && job.getLongitude() != null) {
+            txtJobAddress.setText("Lat: " + job.getLatitude().toString() + " Long: " + job.getLongitude().toString());
         }
 
         txtJobID.setText(Integer.toString(job.getJobID()));
 
         return view;
+    }
+
+    public ArrayList<Job> getJobList() {
+        return this.jobList;
     }
 
 

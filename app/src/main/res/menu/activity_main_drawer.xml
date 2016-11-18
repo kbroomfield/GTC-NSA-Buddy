@@ -4,11 +4,11 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/menu_job_list"
-            android:icon="@drawable/ic_menu_camera"
+            android:icon="@drawable/ic_list"
             android:title="Job List" />
         <item
             android:id="@+id/menu_active_job"
-            android:icon="@drawable/ic_menu_gallery"
+            android:icon="@drawable/ic_assignment_late_black_24dp"
             android:title="Active Job" />
         <item
             android:id="@+id/menu_settings"
@@ -20,7 +20,7 @@
         <menu>
             <item
                 android:id="@+id/menu_logout"
-                android:icon="@drawable/ic_menu_share"
+                android:icon="@drawable/ic_logout"
                 android:title="Logout" />
         </menu>
     </item>

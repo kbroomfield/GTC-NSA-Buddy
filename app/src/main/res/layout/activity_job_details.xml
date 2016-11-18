@@ -25,8 +25,8 @@
             <com.android.volley.toolbox.NetworkImageView
                 android:id="@+id/header_image"
                 android:layout_width="match_parent"
-                android:layout_height="500dp"
-                android:scaleType="center"
+                android:layout_height="350dp"
+                android:scaleType="centerCrop"
                 android:fitsSystemWindows="true"
                 android:contentDescription="@string/app_name"
                 app:layout_collapseMode="parallax" />
