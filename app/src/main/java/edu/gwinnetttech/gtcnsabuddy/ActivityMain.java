@@ -166,16 +166,16 @@ public class ActivityMain extends AppCompatActivity
         // Setup the listview. Using mocked JobDetails for testing.
         ArrayList<JobDetails> jobDetails = new ArrayList<>();
 
-        for ( int i = 1; i < 20; i++ ){
-            JobDetails job = new JobDetails();
-            job.setJobID(i);
-            job.setService("Painting");
-            job.setAddress("75 Maddox Road, Buford, GA 30518");
-            jobDetails.add(job);
-        }
+//        for ( int i = 1; i < 20; i++ ){
+//            JobDetails job = new JobDetails();
+//            job.setJobID(i);
+//            job.setService("Painting");
+//            job.setAddress("75 Maddox Road, Buford, GA 30518");
+//            jobDetails.add(job);
+//        }
 
         ListView listView = (ListView)findViewById(R.id.job_list_view);
-        JobListAdapter jobListAdapter = new JobListAdapter(this, jobDetails);
+        final JobListAdapter jobListAdapter = new JobListAdapter(this, jobDetails);
 
         listView.setAdapter(jobListAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -185,6 +185,27 @@ public class ActivityMain extends AppCompatActivity
                 startActivity(startJobDetailsIntent);
             }
         });
+
+        // Now we will get a list of all jobs associated with the employee and then use that information get the job details objects.
+        StringRequest employeeJobRequest = buildEmployeeRequest("http://www.jumpcreek.com/NSABuddy/Service1.svc/GetJobsForEmployee", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                // Yes, we could have just done a JSON object request but why re-do the buildEmployeeRequest method? Also, this is very FRAGILE
+                try{
+                    JSONArray jsonResponse = new JSONObject(response).getJSONArray("Data");
+
+                    // No foreach for JSONArray
+                    for ( int i = 0; i < jsonResponse.length(); i++ ) {
+                        Log.i("ActivityMain", jsonResponse.getJSONObject(i).toString());
+                    }
+                }
+                catch ( JSONException je ) {
+                    Log.e("ActivityMain", "Error parsing job JSON response: " + je.getMessage());
+                }
+            }
+        });
+
+//        remoteDataService.getRequestQueue().add(employeeJobRequest);
     }
 
     private void employeeLogout() {
