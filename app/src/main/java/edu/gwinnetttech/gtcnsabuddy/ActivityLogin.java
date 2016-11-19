@@ -137,7 +137,15 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            handleSuccessfulLogin(response, employeeId);
+                            // Currently the API returns a 200 and an empty response if the login was unsuccessful. Catch it!
+                            try{
+                                handleSuccessfulLogin(response, employeeId);
+                            }
+                            catch ( Exception ex ){
+                                Log.e("ActivityLogin", "Login failure with error: " + ex.getMessage());
+                                idInputLayout.setError("Login failure. Check Employee ID and try again.");
+                            }
+
                         }
                     }, new Response.ErrorListener() {
                 @Override
@@ -150,6 +158,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
 
             Log.i("ActivityLogin", "Request body is: " + requestObject.toString());
 
+            // TODO: Show the user some indication that the login request is working (progess bar?)
             // Make the request.
             RemoteDataService.getInstance(this).getRequestQueue().add(request);
         } catch (JSONException ex) {
@@ -184,19 +193,12 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
         googleApiClient = new GoogleApiClient.Builder(this).addApi(LocationServices.API).addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
     }
 
-    private void handleSuccessfulLogin(JSONObject returnObject, final int employeeId){
-        // This is done in two seperate calls to edit() in case returnObject throws an exception.
+    private void handleSuccessfulLogin(JSONObject returnObject, final int employeeId) throws JSONException {
         SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences(NSA_PREFERENCES, Context.MODE_PRIVATE).edit();
+        int loginId = returnObject.getJSONArray("Data").getInt(0);
+
+        sharedPreferencesEditor.putInt(LOGIN_ID, loginId);
         sharedPreferencesEditor.putInt(EMPLOYEE_ID, employeeId);
-
-        try{
-            int loginId = returnObject.getJSONArray("Data").getInt(0);
-            sharedPreferencesEditor.putInt(LOGIN_ID, loginId);
-        }
-        catch (JSONException je){
-            Log.e("ActivityLogin", je.getMessage());
-        }
-
         sharedPreferencesEditor.apply();
 
         // Start the next activity.
