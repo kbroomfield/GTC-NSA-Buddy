@@ -1,13 +1,26 @@
 package edu.gwinnetttech.gtcnsabuddy;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -24,6 +37,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+
 import edu.gwinnetttech.gtcnsabuddy.model.Job;
 import edu.gwinnetttech.gtcnsabuddy.service.RemoteDataService;
 
@@ -32,6 +47,8 @@ public class ActivityJobDetails extends AppCompatActivity {
     // TODO: Tie this variable to the actual job status.
     private boolean isActiveJob = false;
 
+    public static final int REQUEST_IMAGE_CAPTURE = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +56,7 @@ public class ActivityJobDetails extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if ( getSupportActionBar() != null ) {
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -64,12 +81,11 @@ public class ActivityJobDetails extends AppCompatActivity {
         requestQueue.add(makeJobRequest("http://www.jumpcreek.com/nsabuddy/service1.svc/getjobimages", selectedJob, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                try{
+                try {
                     String imageUrl = new JSONObject(response).getJSONArray("Data").getJSONObject(0).getString("JobImageAddress");
-                    NetworkImageView networkImageView = (NetworkImageView)findViewById(R.id.header_image);
+                    NetworkImageView networkImageView = (NetworkImageView) findViewById(R.id.header_image);
                     networkImageView.setImageUrl(imageUrl, imageLoader);
-                }
-                catch ( JSONException je ) {
+                } catch (JSONException je) {
                     Log.e("ActivityJobDetails", je.getMessage());
                 }
 
@@ -108,7 +124,70 @@ public class ActivityJobDetails extends AppCompatActivity {
         return true;
     }
 
-    public StringRequest makeJobRequest(String url, final Job j, Response.Listener<String> onResponse) {
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_camera:
+//                Toast.makeText(this, "Button Clicked", Toast.LENGTH_SHORT).show();
+                takePicture();
+                break;
+            default:
+                Toast.makeText(this, "Something went wrong.", Toast.LENGTH_SHORT).show();
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            uploadImage(imageBitmap);
+            ImageView testImageView = (ImageView)findViewById(R.id.test_image_view);
+
+            if ( testImageView != null ){
+                testImageView.setImageBitmap(imageBitmap);
+            }
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if ( requestCode == 6 ){
+            if ( grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivityForResult(takePictureIntent, 1);
+                }
+            }
+        }
+    }
+
+    private void takePicture() {
+        // Get the location permissions that we need if we don't have them already.
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 6);
+        }
+        else {
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
+    private void uploadImage(Bitmap image) {
+        JSONObject jsonObject = new JSONObject();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageInByte = baos.toByteArray();
+
+    }
+
+    private StringRequest makeJobRequest(String url, final Job j, Response.Listener<String> onResponse) {
         return new StringRequest(
                 Request.Method.POST,
                 url,
