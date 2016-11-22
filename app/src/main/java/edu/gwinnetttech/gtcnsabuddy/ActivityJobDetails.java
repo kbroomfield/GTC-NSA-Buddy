@@ -39,11 +39,12 @@ public class ActivityJobDetails extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        if ( getSupportActionBar() != null ) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         // Get the job passed to this activity.
-        Job selectedJob = (Job) getIntent().getParcelableExtra(ActivityMain.JOB_EXTRA);
+        Job selectedJob = getIntent().getParcelableExtra(ActivityMain.JOB_EXTRA);
         getSupportActionBar().setTitle("Job ID " + selectedJob.getJobID());
 
         // Get a reference to the RequestQueue and ImageLoader.
