@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -18,8 +19,10 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -32,14 +35,18 @@ import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 import edu.gwinnetttech.gtcnsabuddy.model.Job;
+import edu.gwinnetttech.gtcnsabuddy.model.JobDetails;
+import edu.gwinnetttech.gtcnsabuddy.model.ResponseJobDetails;
 import edu.gwinnetttech.gtcnsabuddy.service.RemoteDataService;
 
 public class ActivityJobDetails extends AppCompatActivity {
@@ -72,8 +79,14 @@ public class ActivityJobDetails extends AppCompatActivity {
         requestQueue.add(makeJobRequest("http://www.jumpcreek.com/nsabuddy/service1.svc/getjobdetails", selectedJob, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                // TODO: Parse the response into a JobDetails object and then populate the job_details_layout
-                Log.i("ActivityJobDetails", response);
+                Gson gson = new GsonBuilder().create();
+                ArrayList<JobDetails> jobDetailsResponse = gson.fromJson(response, ResponseJobDetails.class).jobDetailsList;
+
+                if ( jobDetailsResponse.size() > 0 ) {
+                    JobDetails jobDetails = jobDetailsResponse.get(0);
+
+                    populateJobDetailsLayout(jobDetails);
+                }
             }
         }));
 
@@ -83,8 +96,21 @@ public class ActivityJobDetails extends AppCompatActivity {
             public void onResponse(String response) {
                 try {
                     String imageUrl = new JSONObject(response).getJSONArray("Data").getJSONObject(0).getString("JobImageAddress");
-                    NetworkImageView networkImageView = (NetworkImageView) findViewById(R.id.header_image);
-                    networkImageView.setImageUrl(imageUrl, imageLoader);
+
+                    imageLoader.get(imageUrl, new ImageLoader.ImageListener() {
+                        @Override
+                        public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+                            ImageView headerImageView = (ImageView) findViewById(R.id.header_image);
+                            Bitmap image = response.getBitmap();
+                            headerImageView.setImageBitmap(image);
+                        }
+
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.e("ActivityJobDetails", "An error occurred retrieving job picture: " + error.getMessage());
+                        }
+                    });
+
                 } catch (JSONException je) {
                     Log.e("ActivityJobDetails", je.getMessage());
                 }
@@ -144,10 +170,11 @@ public class ActivityJobDetails extends AppCompatActivity {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             uploadImage(imageBitmap);
-            ImageView testImageView = (ImageView)findViewById(R.id.test_image_view);
 
-            if ( testImageView != null ){
-                testImageView.setImageBitmap(imageBitmap);
+            ImageView headerImageView = (ImageView)findViewById(R.id.header_image);
+
+            if ( headerImageView != null ) {
+                headerImageView.setImageBitmap(imageBitmap);
             }
         }
 
@@ -159,7 +186,7 @@ public class ActivityJobDetails extends AppCompatActivity {
             if ( grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivityForResult(takePictureIntent, 1);
+                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                 }
             }
         }
@@ -209,5 +236,32 @@ public class ActivityJobDetails extends AppCompatActivity {
                 return "application/json";
             }
         };
+    }
+
+    /**
+     * Use the job details object to set the text in the job details layout.
+     * @param jobDetails
+     */
+    private void populateJobDetailsLayout(JobDetails jobDetails) {
+        TextView streetAddress = (TextView) findViewById(R.id.job_details_street_addr);
+        TextView cityStateZip = (TextView) findViewById(R.id.job_details_city_st_zip);
+        TextView email = (TextView) findViewById(R.id.job_details_email);
+        TextView phone = (TextView) findViewById(R.id.job_details_phone);
+
+        setTextNotNull(streetAddress, jobDetails.getAddress());
+        setTextNotNull(cityStateZip, jobDetails.getCity());
+        setTextNotNull(email, jobDetails.getEmail());
+        setTextNotNull(phone, jobDetails.getPhone());
+    }
+
+    /**
+     * If both the textView and the contents are not null, sets the text.
+     * @param textView
+     * @param contents
+     */
+    private void setTextNotNull(@Nullable TextView textView, @Nullable String contents) {
+        if ( textView != null && contents != null ) {
+            textView.setText(contents);
+        }
     }
 }
