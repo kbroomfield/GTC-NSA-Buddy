@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -45,6 +46,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
     private EditText passwordInput;
     private TextInputLayout idInputLayout;
     private TextInputLayout passwordInputLayout;
+    private ProgressBar progressBar;
 
     private Location currentLocation;
     private GoogleApiClient googleApiClient;
@@ -76,6 +78,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
         passwordInputLayout = (TextInputLayout) findViewById(R.id.login_password_input_layout);
         passwordInput = (EditText) findViewById(R.id.login_input_password);
         employeeIdInput = (EditText) findViewById(R.id.login_input_id);
+        progressBar = (ProgressBar) findViewById(R.id.login_progress);
         currentLocation = null;
 
         Button loginButton = (Button) findViewById(R.id.login_button);
@@ -113,7 +116,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
             idInputLayout.setError("Must enter Employee ID to login.");
             return;
         }
-
+        progressBar.setVisibility(View.VISIBLE);
         final int employeeId = Integer.parseInt(employeeIdInput.getText().toString());
         long timeIn = System.currentTimeMillis();
         String password = passwordInput.getText().toString();
@@ -137,6 +140,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
+                            progressBar.setVisibility(View.GONE);
                             // Currently the API returns a 200 and an empty response if the login was unsuccessful. Catch it!
                             try{
                                 handleSuccessfulLogin(response, employeeId);
@@ -150,6 +154,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
+                    progressBar.setVisibility(View.GONE);
                     // TODO: More detailed error handling. Notify if password was bad or employee ID was bad.
                     Log.e("ActivityLogin", "Login failure.");
                     idInputLayout.setError("Login failure. Check Employee ID and try again.");

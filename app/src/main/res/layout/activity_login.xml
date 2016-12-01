@@ -58,4 +58,15 @@
             android:hint="@string/password"/>
     </android.support.design.widget.TextInputLayout>
 
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/login_progress"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/login_button"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="56dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
 </android.support.constraint.ConstraintLayout>
