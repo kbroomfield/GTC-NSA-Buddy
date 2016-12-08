@@ -193,7 +193,7 @@ public class ActivityMain extends AppCompatActivity
                     startActivity(startJobDetailsIntent);
                 }
                 else {
-                    Log.e("ActivityMain", "An error occured doing job shit.");
+                    Log.e("ActivityMain", "An error occured doing job.");
 //                    Toast.makeText(parent.getContext(), "An unexpected error occured.", Toast.LENGTH_SHORT).show();
                 }
             }
