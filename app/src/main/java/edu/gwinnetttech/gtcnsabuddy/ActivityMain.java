@@ -1,9 +1,11 @@
 package edu.gwinnetttech.gtcnsabuddy;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,6 +19,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -78,12 +81,27 @@ public class ActivityMain extends AppCompatActivity
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            //Creates an alert for user to confirm exit
+            new AlertDialog.Builder(this)
+                    .setTitle("Really Exit?")
+                    .setMessage("Are you sure you want to exit?")
+                    .setNegativeButton(android.R.string.no, null)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            ActivityMain.super.onBackPressed();
+                        }
+                    }).create().show();
+
         }
     }
+
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -115,6 +133,7 @@ public class ActivityMain extends AppCompatActivity
 
         switch ( id ) {
             case R.id.menu_job_list:
+                startActivity(new Intent(this,ActivityMain.class));
                 break;
             case R.id.menu_active_job:
                 break;
@@ -249,9 +268,7 @@ public class ActivityMain extends AppCompatActivity
         sharedPreferencesEditor.remove(ActivityLogin.EMPLOYEE_ID);
         sharedPreferencesEditor.apply();
 
-        // TODO: Prevent back navigation to this activity.
-        Intent startLoginActivity = new Intent(this, ActivityLogin.class);
-        startActivity(startLoginActivity);
+
 
     }
 

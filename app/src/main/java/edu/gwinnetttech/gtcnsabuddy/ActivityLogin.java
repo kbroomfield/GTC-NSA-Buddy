@@ -170,6 +170,8 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
             Log.e("ActivityLogin", ex.getMessage());
         }
 
+
+
     }
 
     @Override
@@ -214,5 +216,8 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
     private void startActivityMain() {
         Intent startActivityMain = new Intent(this, ActivityMain.class);
         startActivity(startActivityMain);
+        finish(); //prevents other activities from coming back here
     }
+
+
 }

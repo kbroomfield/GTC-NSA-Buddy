@@ -82,7 +82,7 @@ public class JobListAdapter extends ArrayAdapter<Job> {
         // They are changing the service to add the pictures to JobDetails object, so it will already be available
         // here without another call. But you will want to go ahead anc change the imgJobImage type to a NetworkImageView.
         // Then we will use that to download the picture from the URL in the Job Object
-        imgJobImage.setImageURI(Uri.EMPTY);
+        imgJobImage.setImageURI(Uri.EMPTY); //TODO: get images for the jobList
 
         return view;
     }
