@@ -7,6 +7,15 @@
     android:layout_height="match_parent"
     tools:context="edu.gwinnetttech.gtcnsabuddy.ActivityLogin">
 
+    <android.support.v4.widget.ContentLoadingProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:layout_gravity = "center_horizontal"
+        android:foregroundGravity="center_horizontal"
+        style="?android:attr/progressBarStyleLarge"/>
+
     <Button
         android:text="@string/login"
         android:layout_width="wrap_content"
@@ -54,7 +63,7 @@
             android:id="@+id/login_input_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="numberPassword"
+            android:inputType="textPassword"
             android:hint="@string/password"/>
     </android.support.design.widget.TextInputLayout>
 
