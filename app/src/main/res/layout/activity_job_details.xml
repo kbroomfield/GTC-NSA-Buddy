@@ -22,7 +22,7 @@
             app:contentScrim="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            <com.android.volley.toolbox.NetworkImageView
+            <ImageView
                 android:id="@+id/header_image"
                 android:layout_width="match_parent"
                 android:layout_height="350dp"

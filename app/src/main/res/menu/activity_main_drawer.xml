@@ -11,9 +11,9 @@
             android:icon="@drawable/ic_assignment_late_black_24dp"
             android:title="Active Job" />
         <item
-            android:id="@+id/menu_settings"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Settings" />
+            android:id="@+id/menu_reports"
+            android:icon="@drawable/ic_assessment_black_24dp"
+            android:title="Reports" />
     </group>
 
     <item android:title="Action">

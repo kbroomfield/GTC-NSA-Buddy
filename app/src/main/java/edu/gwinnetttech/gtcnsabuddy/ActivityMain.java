@@ -1,9 +1,11 @@
 package edu.gwinnetttech.gtcnsabuddy;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -37,7 +39,6 @@ import java.util.ArrayList;
 
 import edu.gwinnetttech.gtcnsabuddy.model.Employee;
 import edu.gwinnetttech.gtcnsabuddy.model.Job;
-import edu.gwinnetttech.gtcnsabuddy.model.JobDetails;
 import edu.gwinnetttech.gtcnsabuddy.model.EmployeeResponse;
 import edu.gwinnetttech.gtcnsabuddy.model.JobResponse;
 import edu.gwinnetttech.gtcnsabuddy.service.RemoteDataService;
@@ -80,12 +81,27 @@ public class ActivityMain extends AppCompatActivity
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            //Creates an alert for user to confirm exit
+            new AlertDialog.Builder(this)
+                    .setTitle("Really Exit?")
+                    .setMessage("Are you sure you want to exit?")
+                    .setNegativeButton(android.R.string.no, null)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            ActivityMain.super.onBackPressed();
+                        }
+                    }).create().show();
+
         }
     }
+
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -117,10 +133,12 @@ public class ActivityMain extends AppCompatActivity
 
         switch ( id ) {
             case R.id.menu_job_list:
+                startActivity(new Intent(this,ActivityMain.class));
                 break;
             case R.id.menu_active_job:
                 break;
-            case R.id.menu_settings:
+            case R.id.menu_reports:
+                startActivity(new Intent(this, ActivityReports.class));
                 break;
             case R.id.menu_logout:
                 employeeLogout();
@@ -194,7 +212,7 @@ public class ActivityMain extends AppCompatActivity
                     startActivity(startJobDetailsIntent);
                 }
                 else {
-                    Log.e("ActivityMain", "An error occured doing job shit.");
+                    Log.e("ActivityMain", "An error occured doing job.");
 //                    Toast.makeText(parent.getContext(), "An unexpected error occured.", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -250,9 +268,7 @@ public class ActivityMain extends AppCompatActivity
         sharedPreferencesEditor.remove(ActivityLogin.EMPLOYEE_ID);
         sharedPreferencesEditor.apply();
 
-        // TODO: Prevent back navigation to this activity.
-        Intent startLoginActivity = new Intent(this, ActivityLogin.class);
-        startActivity(startLoginActivity);
+
 
     }
 
