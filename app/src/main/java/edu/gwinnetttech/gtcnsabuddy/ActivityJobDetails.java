@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -152,6 +153,9 @@ public class ActivityJobDetails extends AppCompatActivity {
 //                Toast.makeText(this, "Button Clicked", Toast.LENGTH_SHORT).show();
                 takePicture();
                 break;
+            case android.R.id.home:
+                onBackPressed();
+                break;
             default:
                 Toast.makeText(this, "Something went wrong.", Toast.LENGTH_SHORT).show();
         }
@@ -237,7 +241,7 @@ public class ActivityJobDetails extends AppCompatActivity {
      * Use the job details object to set the text in the job details layout.
      * @param jobDetails
      */
-    private void populateJobDetailsLayout(JobDetails jobDetails) {
+    private void populateJobDetailsLayout(final JobDetails jobDetails) {
         TextView streetAddress = (TextView) findViewById(R.id.job_details_street_addr);
         TextView cityStateZip = (TextView) findViewById(R.id.job_details_city_st_zip);
         TextView email = (TextView) findViewById(R.id.job_details_email);
@@ -247,6 +251,20 @@ public class ActivityJobDetails extends AppCompatActivity {
         setTextNotNull(cityStateZip, jobDetails.getCity());
         setTextNotNull(email, jobDetails.getEmail());
         setTextNotNull(phone, jobDetails.getPhone());
+
+        ImageView navIcon = (ImageView) findViewById(R.id.job_details_nav_icon);
+        navIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String address = jobDetails.getAddress() + " " + jobDetails.getCity() + " " + jobDetails.getState() + " " + jobDetails.getZip();
+
+                Uri mapUri = Uri.parse("geo:0,0?q=" + Uri.encode(address));
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, mapUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                startActivity(mapIntent);
+
+            }
+        });
     }
 
     /**
